@@ -1,82 +1,46 @@
-const TelegramBot = require('node-telegram-bot-api');
-const mysql = require('mysql2');
-
-// Token bot Telegram
-const TOKEN = '8132722222:AAFcejkBNeAyXWOjId4BKB1av9CfYD3Uwck';
+require("dotenv").config();
+const { Telegraf } = require("telegraf");
+const mongoose = require("mongoose");
 
 // Inisialisasi bot Telegram
-const bot = new TelegramBot(TOKEN, { polling: true });
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// Konfigurasi database MySQL
-const db = mysql.createConnection({
-  host: 'mongodb-vbc4.railway.internal',
-  user: 'mongo',
-  password: 'mTRrDPubVcZsCxzUgQIZUkivlhoGiTcN',
-  database: '',
-  port: '27017',
+// Koneksi ke MongoDB
+mongoose.connect(process.env.MONGODB_URI);
+
+// Definisi Model MongoDB
+const DataSchema = new mongoose.Schema({
+  name: String,
+  value: String,
 });
+const DataModel = mongoose.model("Data", DataSchema);
 
-// Sambungkan ke database
-db.connect((err) => {
-  if (err) {
-    console.error('Koneksi ke database gagal:', err);
-    process.exit(1);
-  }
-  console.log('Terhubung ke database.');
-});
+// Command /start
+bot.start((ctx) => ctx.reply("Halo! Gunakan /data untuk melihat data dari database."));
 
-// Fungsi untuk menyimpan data ke MySQL
-function saveToDatabase(username, message) {
- const query = 'INSERT INTO users (username, message) VALUES (?, ?)';
-  db.query(query, [username, message], (err) => {
-    if (err) {
-      console.error('Gagal menyimpan data ke database:', err);
+// Command /data untuk mengambil data dari MongoDB
+bot.command("data", async (ctx) => {
+  try {
+    const data = await DataModel.find();
+    if (data.length === 0) {
+      ctx.reply("Tidak ada data dalam database.");
     } else {
-      console.log('Data berhasil disimpan.');
+      let message = "📌 Data dari database:\n";
+      data.forEach((item) => {
+        message += `\n🔹 ${item.name}: ${item.value}`;
+      });
+      ctx.reply(message);
     }
-  });
-}
-
-// Fungsi untuk mengambil data dari MySQL
-function getAllData(callback) {
-  const query = 'SELECT * FROM db_onhand';
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('Gagal mengambil data dari database:', err);
-      callback([]);
-    } else {
-      callback(results);
-    }
-  })
-}
-
-// Handler untuk perintah /start
-bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(chatId, 'Halo! Kirimkan pesan untuk disimpan ke database.');
-});
-
-// Handler untuk perintah /show_data
-bot.onText(/\/show_data/, (msg) => {
-  const chatId = msg.chat.id;
-  getAllData((data) => {
-    if (data.length > 0) {
-        console.log('Data dari tabel users:', data);
-      const messages = data.map((row) => `${row.username}: ${row.message}`).join('\n');
-      bot.sendMessage(chatId, `Data yang tersimpan:\n${messages}`);
-    } else {
-      console.log('Tabel kosong atau gagal mengambil data.');
-      bot.sendMessage(chatId, 'Tidak ada data.');
-    }
-  });
-});
-
-// Handler untuk pesan biasa
-bot.on('message', (msg) => {
-  if (msg.text && !msg.text.startsWith('/')) {
-    const username = msg.chat.username || 'Unknown';
-    const message = msg.text;
-    saveToDatabase(username, message);
-    bot.sendMessage(msg.chat.id, 'Pesanmu telah disimpan!');
+  } catch (error) {
+    console.error(error);
+    ctx.reply("Terjadi kesalahan saat mengambil data.");
   }
 });
+
+// Menjalankan bot
+bot.launch();
+console.log("Bot berjalan...");
+
+// Menangani proses keluar
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
