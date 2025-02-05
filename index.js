@@ -1,5 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 // Token bot Telegram
 const TOKEN = '8132722222:AAFcejkBNeAyXWOjId4BKB1av9CfYD3Uwck';
