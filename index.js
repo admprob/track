@@ -24,7 +24,7 @@ db.connect((err) => {
   console.log('Terhubung ke database.');
 });
 
- Fungsi untuk menyimpan data ke MySQL
+// Fungsi untuk menyimpan data ke MySQL
 function saveToDatabase(username, message) {
  const query = 'INSERT INTO users (username, message) VALUES (?, ?)';
   db.query(query, [username, message], (err) => {
