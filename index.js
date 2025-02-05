@@ -9,10 +9,10 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 
 // Konfigurasi database MySQL
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'bot_telegram',
+  host: 'postgres.railway.internal',
+  user: 'postgres',
+  password: 'iADvHypoSeiYLBaeKUPploelCYqDHfkC',
+  database: 'railway',
 });
 
 // Sambungkan ke database
