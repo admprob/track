@@ -9,11 +9,11 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 
 // Konfigurasi database MySQL
 const db = mysql.createConnection({
-  host: 'mysql-9zti.railway.internal',
-  user: 'root',
-  password: 'GhgOwzIKPodVSxysglwDfOBgKoVeplCg',
-  database: 'railway',
-  port: '3306',
+  host: 'mongodb-vbc4.railway.internal',
+  user: 'mongo',
+  password: 'mTRrDPubVcZsCxzUgQIZUkivlhoGiTcN',
+  database: '',
+  port: '27017',
 });
 
 // Sambungkan ke database
